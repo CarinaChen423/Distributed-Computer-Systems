@@ -1,12 +1,5 @@
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.net.*;
+import java.util.Arrays;
 import java.util.Enumeration;
 
 /*Network interfaces
@@ -25,12 +18,11 @@ import java.util.Enumeration;
  *
  * @author Dell
  */
-public class Interfaces {
 
-    /**
-     * @param args the command line arguments
-     */
+
+public class InterfaceDetails {
     public static void main(String[] args) {
+
         try {
             InetAddress localHost = Inet4Address.getLocalHost();
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
@@ -50,30 +42,45 @@ public class Interfaces {
         catch(SocketException | UnknownHostException e) {
 
         }
-    }
 
-}
+        if (args.length < 1) {
+            System.out.println("Please provide the network interface name as a parameter.");
+            return;
+        }
 
+        try {
+            // Fetch the interface by its name provided as an argument
+            NetworkInterface networkInterface = NetworkInterface.getByName(args[0]);
 
-public class ListInterfaces {
-    public static void main(String[] args) {
-        try { // Get all network interfaces
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            // Iterate through each network interface
-            while (interfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = interfaces.nextElement();
-                // Check if it's a virtual interface
-                if (networkInterface.isVirtual()) {
-                    continue;
-                }
-                //Print interface name
-                String interfaceName =networkInterface.getName();
-                if (networkInterface.isLoopback()) {
-                    interfaceName +=
-                }
+            if (networkInterface == null) {
+                System.out.println("No such interface found.");
+                return;
             }
+
+            // Print the interface name
+            System.out.println("Interface Name: " + networkInterface.getDisplayName());
+
+            // Get the MAC address
+            byte[] mac = networkInterface.getHardwareAddress();
+            if (mac != null) {
+                StringBuilder macStr = new StringBuilder();
+                for (int i = 0; i < mac.length; i++) {
+                    macStr.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+                }
+                System.out.println("MAC Address: " + macStr.toString());
+            } else {
+                System.out.println("MAC Address not available.");
+            }
+
+            // Get and print the IP addresses attached to the interface
+            Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+            while (inetAddresses.hasMoreElements()) {
+                InetAddress inetAddress = inetAddresses.nextElement();
+                System.out.println("IP Address: " + inetAddress.getHostAddress());
+            }
+
         } catch (SocketException e) {
-            throw new RuntimeException(e);
+            System.out.println("SocketException occurred: " + e.getMessage());
         }
     }
 }

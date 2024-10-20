@@ -1,3 +1,5 @@
+package Lab2;
+
 import java.net.*;
 import java.util.Arrays;
 import java.util.Enumeration;
